@@ -1,0 +1,149 @@
+<script>
+const KARENS = [
+    { id: 'common_karen', name: 'Обычный Карен', tier: 'common', img: 'https://i.yapx.ru/eS6WKb.jpg' },
+    { id: 'alparen', name: 'Карен-альпарен', tier: 'rare', img: 'https://i.yapx.ru/eS6WDb.jpg' },
+    { id: 'karamelka', name: 'Каренка карамелька', tier: 'rare', img: 'https://i.yapx.ru/eS6V1b.jpg' },
+    { id: 'boxren', name: 'Карен Боксрен', tier: 'rare', img: 'https://i.yapx.ru/eS6VJb.jpg' },
+    { id: 'dobren', name: 'Добрен', tier: 'super', img: 'https://i.yapx.ru/eS6U4b.jpg' },
+    { id: 'zloren', name: 'Злорен', tier: 'super', img: 'https://i.yapx.ru/eS6Uvb.jpg' },
+    { id: 'golden_karen', name: 'Golden Karen', tier: 'secret', img: 'https://i.yapx.ru/eS6Vib.jpg' }
+];
+
+let balance = 10;
+let inventory = {};
+let adminClicks = 0;
+let cheatActive = false;
+
+function checkPassword() {
+    if (document.getElementById('pass-input').value === 'karen2026') {
+        document.getElementById('auth-screen').style.display = 'none';
+        initGame();
+    } else {
+        alert('У тебя недостаточно чести! Ты каренус!');
+    }
+}
+
+function initGame() {
+    updateUI();
+    buildTapePlaceholder();
+}
+
+function updateUI() {
+    document.getElementById('balance-val').innerText = balance;
+    let uniqueCount = inventory ? Object.keys(inventory).length : 0;
+    document.getElementById('col-val').innerText = uniqueCount + " / " + KARENS.length;
+    
+    const grid = document.getElementById('inventory');
+    if (grid) {
+        grid.innerHTML = '';
+        KARENS.forEach(function(k) {
+            if (inventory[k.id]) {
+                const card = document.createElement('div');
+                card.className = "inv-card bg-" + k.tier;
+                card.innerHTML = "<div class='count'>x" + inventory[k.id] + "</div><img src='" + k.img + "'><div class='name'>" + k.name + "</div>";
+                grid.appendChild(card);
+            }
+        });
+    }
+}
+
+function buildTapePlaceholder() {
+    const tape = document.getElementById('tape');
+    if (!tape) return;
+    tape.style.transition = 'none';
+    tape.style.transform = 'translateX(0px)';
+    tape.innerHTML = '';
+    for (let i = 0; i < 40; i++) {
+        tape.appendChild(createSlotCard(KARENS[Math.floor(Math.random() * KARENS.length)]));
+    }
+}
+
+function createSlotCard(karen) {
+    const card = document.createElement('div');
+    card.className = "slot-card bg-" + karen.tier;
+    card.innerHTML = "<img src='" + karen.img + "'>";
+    return card;
+}
+
+function rollKaren() {
+    if (cheatActive) return KARENS.find(k => k.id === 'golden_karen');
+    const rand = Math.random() * 100;
+    if (rand < 0.005) return KARENS.find(k => k.id === 'golden_karen');
+    if (rand < 1.0) {
+        const supers = KARENS.filter(k => k.tier === 'super');
+        return supers[Math.floor(Math.random() * supers.length)];
+    }
+    if (rand < 40.0) {
+        const rares = KARENS.filter(k => k.tier === 'rare');
+        return rares[Math.floor(Math.random() * rares.length)];
+    }
+    return KARENS.find(k => k.id === 'common_karen');
+}
+
+function startSpin() {
+    if (balance <= 0) {
+        alert('Спины кончились!');
+        return;
+    }
+    balance--;
+    updateUI();
+    document.getElementById('spin-btn').disabled = true;
+
+    const tape = document.getElementById('tape');
+    buildTapePlaceholder();
+    const prizeKaren = rollKaren();
+    const prizeIndex = 32;
+
+    if (tape && tape.children[prizeIndex]) {
+        tape.replaceChild(createSlotCard(prizeKaren), tape.children[prizeIndex]);
+    }
+
+    setTimeout(function() {
+        tape.style.transition = 'transform 4s cubic-bezier(0.1, 0.8, 0.1, 1)';
+        const cardWidth = 100;
+        const wrapperWidth = document.querySelector('.roulette-wrapper').offsetWidth;
+        tape.style.transform = "translateX(" + (-(prizeIndex * cardWidth) + (wrapperWidth / 2) - (cardWidth / 2)) + "px)";
+    }, 50);
+
+    setTimeout(function() {
+        inventory[prizeKaren.id] = (inventory[prizeKaren.id] || 0) + 1;
+        updateUI();
+        showModal(prizeKaren);
+        document.getElementById('spin-btn').disabled = false;
+    }, 4100);
+}
+
+function showModal(karen) {
+    document.getElementById('modal-content').className = "modal-content bg-" + karen.tier;
+    document.getElementById('win-tier').innerText = karen.tier.toUpperCase();
+    document.getElementById('win-img').src = karen.img;
+    document.getElementById('win-name').innerText = karen.name;
+    document.getElementById('win-modal').style.display = 'flex';
+}
+
+function closeModal() {
+    document.getElementById('win-modal').style.display = 'none';
+}
+
+function adminClick() {
+    adminClicks++;
+    if (adminClicks >= 5) {
+        document.getElementById('admin-panel').style.display = 'block';
+    }
+}
+
+function addSpins() {
+    balance += 100;
+    updateUI();
+}
+
+function clearInv() {
+    inventory = {};
+    updateUI();
+}
+
+function toggleCheat() {
+    cheatActive = !cheatActive;
+    document.getElementById('cheat-status').innerText = cheatActive ? 'ВКЛ' : 'ВЫКЛ';
+}
+</script> 
