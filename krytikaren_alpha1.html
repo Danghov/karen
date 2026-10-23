@@ -3,211 +3,604 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Крути Карен! Альфа</title>
+    <title>Крути Карен! Альфа 2.0</title>
     <style>
-        :root { --common: #808080; --rare: #1e3c72; --super: #ffd700; --secret: #0d0d0d; }
-        body { background-color: #121212; color: #ffffff; font-family: sans-serif; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; user-select: none; }
-        #auth-screen { position: fixed; top:0; left:0; width:100vw; height:100vh; background: #0a0a0a; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; }
-        #auth-screen input { padding: 12px; font-size: 16px; border-radius: 8px; border: 2px solid var(--rare); background: #222; color: #fff; text-align: center; margin-bottom: 15px; outline: none; }
-        #auth-screen button { padding: 10px 25px; background: var(--rare); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        .container { max-width: 800px; width: 100%; padding: 20px; box-sizing: border-box; text-align: center; }
-        #admin-trigger { cursor: pointer; font-size: 14px; color: #555; }
-        .balance-panel { font-size: 18px; margin: 15px 0; background: #1e1e1e; padding: 10px; border-radius: 10px; border: 1px solid #333; }
-        .roulette-wrapper { position: relative; width: 100%; height: 130px; background: #1a1a1a; border: 3px solid #333; border-radius: 12px; overflow: hidden; margin: 25px 0; box-shadow: inset 0 0 20px #000; }
-        .pointer { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 4px; height: 100%; background: #ff3333; z-index: 10; box-shadow: 0 0 10px #ff3333; }
-        .roulette-tape { display: flex; position: absolute; left: 0; top: 10px; height: 110px; will-change: transform; }
-        .slot-card { width: 90px; height: 110px; margin: 0 5px; background: #252525; border-radius: 8px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; box-sizing: border-box; border-bottom: 5px solid #fff; }
+        :root {
+            --common: #808080;
+            --rare: #1e3c72;
+            --super: #ffd700;
+            --secret: #9b59b6;
+            --currency: #c0c0c0;
+        }
+        * { box-sizing: border-box; }
+        body {
+            background: #0f0f0f;
+            color: #fff;
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+        #auth-screen, #login-screen {
+            position: fixed; inset: 0;
+            background: #0a0a0a;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            gap: 15px;
+        }
+        input, button, select {
+            padding: 12px 18px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: none;
+            outline: none;
+        }
+        input {
+            background: #222;
+            color: #fff;
+            border: 2px solid #333;
+            width: 260px;
+            text-align: center;
+        }
+        button {
+            background: #1e3c72;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        button:hover { filter: brightness(1.2); }
+        button:disabled { background: #444; cursor: not-allowed; }
+
+        .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; margin-bottom: 20px; }
+        .header h1 { margin: 0; font-size: 28px; cursor: pointer; }
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            background: #1a1a1a;
+            padding: 12px 20px;
+            border-radius: 12px;
+            margin: 15px 0;
+            font-size: 18px;
+        }
+        .currency { color: var(--currency); font-weight: bold; }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            justify-content: center;
+        }
+        .tab-btn {
+            background: #222;
+            padding: 10px 25px;
+        }
+        .tab-btn.active { background: #1e3c72; }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .roulette-wrapper {
+            position: relative;
+            width: 100%;
+            height: 140px;
+            background: #1a1a1a;
+            border: 3px solid #333;
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        .pointer {
+            position: absolute;
+            top: 0; left: 50%;
+            transform: translateX(-50%);
+            width: 4px; height: 100%;
+            background: #ff3333;
+            z-index: 10;
+            box-shadow: 0 0 12px #ff3333;
+        }
+        .roulette-tape {
+            display: flex;
+            position: absolute;
+            left: 0; top: 15px;
+            height: 110px;
+            will-change: transform;
+        }
+        .slot-card {
+            width: 90px; height: 110px;
+            margin: 0 5px;
+            background: #252525;
+            border-radius: 8px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 5px solid #fff;
+        }
         .slot-card img { width: 70px; height: 70px; object-fit: cover; border-radius: 6px; }
-        .spin-btn { background: linear-gradient(135deg, #1e3c72, #2a5298); color: white; border: none; padding: 15px 40px; font-size: 20px; font-weight: bold; border-radius: 12px; cursor: pointer; box-shadow: 0 5px 15px rgba(30,60,152,0.4); }
-        .spin-btn:disabled { background: #444; cursor: not-allowed; box-shadow: none; }
+
+        .spin-btn {
+            display: block;
+            margin: 20px auto;
+            padding: 16px 50px;
+            font-size: 20px;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            border-radius: 12px;
+        }
+
         .bg-common { border-bottom-color: var(--common) !important; }
         .bg-rare { border-bottom-color: var(--rare) !important; }
         .bg-super { border-bottom-color: var(--super) !important; }
-        .bg-secret { border-bottom-color: var(--secret) !important; background: #050505; }
-        .inventory-header { text-align: left; margin-top: 40px; font-size: 20px; border-bottom: 2px solid #333; padding-bottom: 5px; }
-        .inventory-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 15px; margin-top: 20px; }
-        .inv-card { background: #1e1e1e; border-radius: 10px; padding: 10px; display: flex; flex-direction: column; align-items: center; position: relative; border: 2px solid #333; }
-        .inv-card img { width: 90px; height: 90px; object-fit: cover; border-radius: 8px; }
-        .inv-card .name { font-size: 12px; margin-top: 8px; font-weight: bold; text-align: center; }
-        .inv-card .count { position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.7); padding: 2px 6px; font-size: 11px; border-radius: 5px; color: #ffd700; }
-        #win-modal { position: fixed; top:0; left:0; width:100vw; height:100vh; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 100; }
-        .modal-content { background: #222; padding: 30px; border-radius: 20px; text-align: center; border: 3px solid #fff; max-width: 300px; }
+        .bg-secret { border-bottom-color: var(--secret) !important; }
+
+        .inventory-grid, .market-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .card {
+            background: #1e1e1e;
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            border: 2px solid #333;
+            position: relative;
+        }
+        .card img { width: 100px; height: 100px; object-fit: cover; border-radius: 8px; }
+        .card .name { font-size: 13px; margin: 8px 0 4px; font-weight: bold; }
+        .card .count {
+            position: absolute;
+            top: 8px; right: 8px;
+            background: rgba(0,0,0,0.75);
+            padding: 2px 7px;
+            border-radius: 6px;
+            font-size: 12px;
+            color: #ffd700;
+        }
+        .card button {
+            margin-top: 8px;
+            padding: 6px 12px;
+            font-size: 13px;
+            width: 100%;
+        }
+        .sell-btn { background: #c0392b; }
+        .buy-btn { background: #27ae60; }
+
+        #admin-panel {
+            display: none;
+            background: #1a0a0a;
+            border: 2px solid #ff5555;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+        .admin-section { margin-bottom: 20px; }
+        .admin-section h3 { margin: 0 0 10px; color: #ff5555; }
+        .admin-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 10px; }
+
+        #win-modal {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        .modal-content {
+            background: #222;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            border: 3px solid #fff;
+            max-width: 320px;
+        }
         .modal-content img { width: 180px; height: 180px; object-fit: cover; border-radius: 12px; }
-        #admin-panel { display: none; background: #2c1a1a; border: 1px solid #ff5555; padding: 15px; border-radius: 10px; margin-top: 20px; }
-        .admin-btn { background: #ff5555; color: white; border: none; padding: 5px 10px; margin: 5px; cursor: pointer; border-radius: 5px;}
     </style>
 </head>
 <body>
+    <!-- Первый экран: общий пароль -->
     <div id="auth-screen">
-        <h2 style="color: #ffd700; margin-bottom: 20px;">Крути Карен! Казино Чести</h2>
-        <input type="password" id="pass-input" placeholder="Введи пароль чести">
-        <button onclick="checkPassword()">Войти в пул</button>
+        <h2 style="color:#ffd700">Крути Карен! Казино Чести</h2>
+        <input type="password" id="main-pass" placeholder="Пароль чести">
+        <button onclick="checkMainPassword()">Войти</button>
     </div>
-    <div class="container">
-        <h1 onclick="adminClick()">Крути Карен!</h1>
-        <div id="admin-trigger">Альфа версия (кликни 5 раз для админки)</div>
-        <div class="balance-panel">🎰 Спины: <span id="balance-val">10</span> | 📦 В коллекции: <span id="col-val">0 / 7</span></div>
-        <div class="roulette-wrapper"><div class="pointer"></div><div class="roulette-tape" id="tape"></div></div>
-        <button class="spin-btn" id="spin-btn" onclick="startSpin()">ИСПЫТАТЬ ЧЕСТЬ</button>
-        <div id="admin-panel">
-            <h3>Панель Главврача (Админка)</h3>
-            <button class="admin-btn" onclick="addSpins()">+100 Спинов</button>
-            <button class="admin-btn" onclick="clearInv()">Сбросить инвентарь</button>
-            <button class="admin-btn" onclick="toggleCheat()">Подкрутка на Секретку: <span id="cheat-status">ВЫКЛ</span></button>
+
+    <!-- Второй экран: логин аккаунта -->
+    <div id="login-screen" style="display:none">
+        <h2>Вход в аккаунт</h2>
+        <input type="text" id="login-input" placeholder="Твой секретный логин">
+        <button onclick="loginAccount()">Войти / Создать</button>
+        <p style="color:#888;font-size:13px">Логин может быть любым. Каждый логин — отдельный аккаунт.</p>
+    </div>
+
+    <!-- Основная игра -->
+    <div class="container" id="game" style="display:none">
+        <div class="header">
+            <h1>Крути Карен!</h1>
+            <div style="color:#888;font-size:14px" id="current-login"></div>
         </div>
-        <div class="inventory-header">Твой Инвентарь Каренов</div>
-        <div class="inventory-grid" id="inventory"></div>
+
+        <div class="stats">
+            <div>🎰 Спины: <span id="balance-val">50</span></div>
+            <div class="currency">C <span id="money-val">0</span></div>
+            <div>📦 <span id="col-val">0 / 0</span></div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('spin')">Крутить</button>
+            <button class="tab-btn" onclick="switchTab('market')">Рынок</button>
+            <button class="tab-btn" onclick="switchTab('inventory')">Инвентарь</button>
+        </div>
+
+        <!-- Вкладка Крутить -->
+        <div id="tab-spin" class="tab-content active">
+            <div class="roulette-wrapper">
+                <div class="pointer"></div>
+                <div class="roulette-tape" id="tape"></div>
+            </div>
+            <button class="spin-btn" id="spin-btn" onclick="startSpin()">ИСПЫТАТЬ ЧЕСТЬ</button>
+        </div>
+
+        <!-- Вкладка Рынок -->
+        <div id="tab-market" class="tab-content">
+            <h2>Рынок Каренов</h2>
+            <div class="market-grid" id="market-grid"></div>
+        </div>
+
+        <!-- Вкладка Инвентарь -->
+        <div id="tab-inventory" class="tab-content">
+            <h2>Твой Инвентарь</h2>
+            <div class="inventory-grid" id="inventory-grid"></div>
+        </div>
+
+        <!-- Админка -->
+        <div id="admin-panel">
+            <h2 style="color:#ff5555">Панель Главврача</h2>
+
+            <div class="admin-section">
+                <h3>1. Выдать карена</h3>
+                <div class="admin-row">
+                    <select id="admin-karen"></select>
+                    <button onclick="adminGiveKaren()">Выдать</button>
+                </div>
+            </div>
+
+            <div class="admin-section">
+                <h3>2. Выдать деньги</h3>
+                <div class="admin-row">
+                    <input type="number" id="admin-money" placeholder="Сумма C" style="width:140px">
+                    <button onclick="adminGiveMoney()">Выдать</button>
+                </div>
+            </div>
+
+            <div class="admin-section">
+                <h3>3. Добавить крутки</h3>
+                <div class="admin-row">
+                    <input type="number" id="admin-spins" placeholder="Количество" style="width:140px">
+                    <button onclick="adminAddSpins()">Добавить</button>
+                </div>
+            </div>
+
+            <div class="admin-section">
+                <h3>4. Подкрутка (какие редкости могут выпадать)</h3>
+                <div class="admin-row">
+                    <label><input type="checkbox" id="rig-common" checked> Common</label>
+                    <label><input type="checkbox" id="rig-rare" checked> Rare</label>
+                    <label><input type="checkbox" id="rig-super" checked> Super</label>
+                    <label><input type="checkbox" id="rig-secret" checked> Secret</label>
+                    <button onclick="applyRig()">Применить</button>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <!-- Модалка выигрыша -->
     <div id="win-modal" onclick="closeModal()">
         <div class="modal-content" id="modal-content">
-            <h2 id="win-tier" style="margin-top:0;">ВЫПАЛ!</h2>
+            <h2 id="win-tier">ВЫПАЛ!</h2>
             <img id="win-img" src="" alt="">
-            <h3 id="win-name">Название</h3>
-            <p style="color: #888; font-size: 12px;">Кликни в любое место, чтобы закрыть</p>
+            <h3 id="win-name"></h3>
+            <p style="color:#888;font-size:13px">Кликни чтобы закрыть</p>
         </div>
     </div>
-    <script>
-        const KARENS = [
-            { id: 'common_karen', name: 'Обычный Карен', tier: 'common', img: 'https://i.yapx.ru/eS6WKb.jpg' },
-            { id: 'alparen', name: 'Карен-альпарен', tier: 'rare', img: 'https://i.yapx.ru/eS6WDb.jpg' },
-            { id: 'karamelka', name: 'Каренка карамелька', tier: 'rare', img: 'https://i.yapx.ru/eS6V1b.jpg' },
-            { id: 'boxren', name: 'Карен Боксрен', tier: 'rare', img: 'https://i.yapx.ru/eS6VJb.jpg' },
-            { id: 'dobren', name: 'Добрен', tier: 'super', img: 'https://i.yapx.ru/eS6U4b.jpg' },
-            { id: 'zloren', name: 'Злорен', tier: 'super', img: 'https://i.yapx.ru/eS6Uvb.jpg' },
-            { id: 'golden_karen', name: 'Golden Karen', tier: 'secret', img: 'https://i.yapx.ru/eS6Vib.jpg' }
-        ];
-        let balance = 10;
-        let inventory = {};
-        let adminClicks = 0;
-        let cheatActive = false;
 
-        function checkPassword() {
-            if (document.getElementById('pass-input').value === 'karen2026') {
-                document.getElementById('auth-screen').style.display = 'none';
-                initGame();
-            } else {
-                alert('У тебя недостаточно чести! Ты каренус!');
-            }
-        }
+<script>
+const KARENS = [
+    // Common
+    { id: 'common_karen', name: 'Обычный Карен', tier: 'common', img: 'https://i.yapx.ru/eS6WDb.jpg' }, // поменяли местами
+    { id: 'alparen', name: 'Карен-альпарен', tier: 'common', img: 'https://i.yapx.ru/eS6WKb.jpg' },
+    { id: 'kamren', name: 'Камрен', tier: 'common', img: 'https://via.placeholder.com/150?text=Камрен' },
+    { id: 'alkaren', name: 'Алкарен', tier: 'common', img: 'https://via.placeholder.com/150?text=Алкарен' },
+    { id: 'pechkaren', name: 'Печкарен', tier: 'common', img: 'https://via.placeholder.com/150?text=Печкарен' },
 
-        function initGame() {
-            updateUI();
-            buildTapePlaceholder();
-        }
+    // Rare
+    { id: 'karamelka', name: 'Каренка карамелька', tier: 'rare', img: 'https://i.yapx.ru/eS6V1b.jpg' },
+    { id: 'boxren', name: 'Боксрен', tier: 'rare', img: 'https://i.yapx.ru/eS6VJb.jpg' },
+    { id: 'vedmren', name: 'Ведьмрен', tier: 'rare', img: 'https://via.placeholder.com/150?text=Ведьмрен' },
+    { id: 'skibidren', name: 'Скибидирен', tier: 'rare', img: 'https://via.placeholder.com/150?text=Скибидирен' },
+    { id: 'tykvaren', name: 'Тыкварен', tier: 'rare', img: 'https://via.placeholder.com/150?text=Тыкварен' },
 
-        function updateUI() {
-            document.getElementById('balance-val').innerText = balance;
-            let uniqueCount = inventory ? Object.keys(inventory).length : 0;
-            document.getElementById('col-val').innerText = uniqueCount + " / " + KARENS.length;
-            const grid = document.getElementById('inventory');
-            if (grid) {
-                grid.innerHTML = '';
-                KARENS.forEach(function(k) {
-                    if (inventory[k.id]) {
-                        const card = document.createElement('div');
-                        card.className = "inv-card bg-" + k.tier;
-                        card.innerHTML = "<div class='count'>x" + inventory[k.id] + "</div><img src='" + k.img + "'><div class='name'>" + k.name + "</div>";
-                        grid.appendChild(card);
-                    }
-                });
-            }
-        }
+    // Super
+    { id: 'dobren', name: 'Добрен', tier: 'super', img: 'https://i.yapx.ru/eS6U4b.jpg' },
+    { id: 'zloren', name: 'Злорен', tier: 'super', img: 'https://i.yapx.ru/eS6Uvb.jpg' },
+    { id: 'zmeikarenych', name: 'Змей Кареныч', tier: 'super', img: 'https://via.placeholder.com/150?text=Змей+Кареныч' },
+    { id: 'tachkaren', name: 'Тачкарен', tier: 'super', img: 'https://via.placeholder.com/150?text=Тачкарен' },
+    { id: 'sigmaren', name: 'Сигмарен', tier: 'super', img: 'https://via.placeholder.com/150?text=Сигмарен' },
 
-        function buildTapePlaceholder() {
-            const tape = document.getElementById('tape');
-            if (!tape) return;
-            tape.style.transition = 'none';
-            tape.style.transform = 'translateX(0px)';
-            tape.innerHTML = '';
-            for (let i = 0; i < 40; i++) {
-                tape.appendChild(createSlotCard(KARENS[Math.floor(Math.random() * KARENS.length)]));
-            }
-        }
+    // Secret
+    { id: 'golden_karen', name: 'Golden Karen', tier: 'secret', img: 'https://i.yapx.ru/eS6Vib.jpg' },
+    { id: 'primeren', name: 'Праймрен', tier: 'secret', img: 'https://via.placeholder.com/150?text=Праймрен' }
+];
 
-        function createSlotCard(karen) {
+const SELL_PRICE = { common: 10, rare: 50, super: 500, secret: 100000 };
+const BUY_PRICE = { common: 15, rare: 75, super: 750, secret: 150000 };
+
+let currentLogin = null;
+let balance = 50;
+let money = 0;
+let inventory = {};
+let rig = { common: true, rare: true, super: true, secret: true };
+
+// ========== АВТОРИЗАЦИЯ ==========
+function checkMainPassword() {
+    if (document.getElementById('main-pass').value === 'karen2026') {
+        document.getElementById('auth-screen').style.display = 'none';
+        document.getElementById('login-screen').style.display = 'flex';
+    } else {
+        alert('Неверный пароль чести!');
+    }
+}
+
+function loginAccount() {
+    const login = document.getElementById('login-input').value.trim();
+    if (!login) return alert('Введи логин');
+
+    currentLogin = login;
+    loadAccount();
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('game').style.display = 'block';
+    document.getElementById('current-login').innerText = 'Аккаунт: ' + login;
+    updateUI();
+    buildTapePlaceholder();
+    renderMarket();
+    fillAdminSelect();
+}
+
+function saveAccount() {
+    if (!currentLogin) return;
+    localStorage.setItem('karen_' + currentLogin, JSON.stringify({
+        balance, money, inventory, rig
+    }));
+}
+
+function loadAccount() {
+    const data = localStorage.getItem('karen_' + currentLogin);
+    if (data) {
+        const parsed = JSON.parse(data);
+        balance = parsed.balance ?? 50;
+        money = parsed.money ?? 0;
+        inventory = parsed.inventory ?? {};
+        rig = parsed.rig ?? { common: true, rare: true, super: true, secret: true };
+    } else {
+        balance = 50;
+        money = 0;
+        inventory = {};
+        rig = { common: true, rare: true, super: true, secret: true };
+    }
+}
+
+// ========== UI ==========
+function switchTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    event.target.classList.add('active');
+    document.getElementById('tab-' + tab).classList.add('active');
+    if (tab === 'inventory') renderInventory();
+    if (tab === 'market') renderMarket();
+}
+
+function updateUI() {
+    document.getElementById('balance-val').innerText = balance;
+    document.getElementById('money-val').innerText = money.toLocaleString();
+    const unique = Object.keys(inventory).filter(id => inventory[id] > 0).length;
+    document.getElementById('col-val').innerText = unique + ' / ' + KARENS.length;
+    saveAccount();
+}
+
+// ========== РУЛЕТКА ==========
+function buildTapePlaceholder() {
+    const tape = document.getElementById('tape');
+    tape.style.transition = 'none';
+    tape.style.transform = 'translateX(0)';
+    tape.innerHTML = '';
+    for (let i = 0; i < 40; i++) {
+        const k = KARENS[Math.floor(Math.random() * KARENS.length)];
+        tape.appendChild(createSlotCard(k));
+    }
+}
+
+function createSlotCard(karen) {
+    const div = document.createElement('div');
+    div.className = 'slot-card bg-' + karen.tier;
+    div.innerHTML = `<img src="${karen.img}">`;
+    return div;
+}
+
+function rollKaren() {
+    let pool = KARENS.filter(k => rig[k.tier]);
+    if (pool.length === 0) pool = KARENS;
+
+    const rand = Math.random() * 100;
+    if (rand < 0.3 && pool.some(k => k.tier === 'secret')) {
+        return pool.filter(k => k.tier === 'secret')[Math.floor(Math.random() * pool.filter(k => k.tier === 'secret').length)];
+    }
+    if (rand < 3 && pool.some(k => k.tier === 'super')) {
+        return pool.filter(k => k.tier === 'super')[Math.floor(Math.random() * pool.filter(k => k.tier === 'super').length)];
+    }
+    if (rand < 35 && pool.some(k => k.tier === 'rare')) {
+        return pool.filter(k => k.tier === 'rare')[Math.floor(Math.random() * pool.filter(k => k.tier === 'rare').length)];
+    }
+    return pool.filter(k => k.tier === 'common')[Math.floor(Math.random() * pool.filter(k => k.tier === 'common').length)] || pool[0];
+}
+
+function startSpin() {
+    if (balance <= 0) return alert('Спины кончились!');
+    balance--;
+    updateUI();
+    document.getElementById('spin-btn').disabled = true;
+
+    const tape = document.getElementById('tape');
+    buildTapePlaceholder();
+    const prize = rollKaren();
+    const prizeIndex = 32;
+
+    if (tape.children[prizeIndex]) {
+        tape.replaceChild(createSlotCard(prize), tape.children[prizeIndex]);
+    }
+
+    setTimeout(() => {
+        tape.style.transition = 'transform 4s cubic-bezier(0.15, 0.85, 0.25, 1)';
+        const cardWidth = 100;
+        const wrapperWidth = document.querySelector('.roulette-wrapper').offsetWidth;
+        tape.style.transform = `translateX(${-(prizeIndex * cardWidth) + (wrapperWidth / 2) - (cardWidth / 2)}px)`;
+    }, 50);
+
+    setTimeout(() => {
+        inventory[prize.id] = (inventory[prize.id] || 0) + 1;
+        updateUI();
+        showModal(prize);
+        document.getElementById('spin-btn').disabled = false;
+    }, 4200);
+}
+
+function showModal(karen) {
+    document.getElementById('modal-content').className = 'modal-content bg-' + karen.tier;
+    document.getElementById('win-tier').innerText = karen.tier.toUpperCase();
+    document.getElementById('win-img').src = karen.img;
+    document.getElementById('win-name').innerText = karen.name;
+    document.getElementById('win-modal').style.display = 'flex';
+}
+function closeModal() {
+    document.getElementById('win-modal').style.display = 'none';
+}
+
+// ========== ИНВЕНТАРЬ ==========
+function renderInventory() {
+    const grid = document.getElementById('inventory-grid');
+    grid.innerHTML = '';
+    KARENS.forEach(k => {
+        if (inventory[k.id] > 0) {
             const card = document.createElement('div');
-            card.className = "slot-card bg-" + karen.tier;
-            card.innerHTML = "<img src='" + karen.img + "'>";
-            return card;
+            card.className = 'card';
+            card.innerHTML = `
+                <div class="count">x${inventory[k.id]}</div>
+                <img src="${k.img}">
+                <div class="name">${k.name}</div>
+                <div style="color:var(--currency);font-size:13px">${SELL_PRICE[k.tier]} C</div>
+                <button class="sell-btn" onclick="sellKaren('${k.id}')">Продать</button>
+            `;
+            grid.appendChild(card);
         }
+    });
+}
 
-        function rollKaren() {
-            if (cheatActive) return KARENS.find(k => k.id === 'golden_karen');
-            const rand = Math.random() * 100;
-            if (rand < 0.005) return KARENS.find(k => k.id === 'golden_karen');
-            if (rand < 1.0) {
-                const supers = KARENS.filter(k => k.tier === 'super');
-                return supers[Math.floor(Math.random() * supers.length)];
-            }
-            if (rand < 40.0) {
-                const rares = KARENS.filter(k => k.tier === 'rare');
-                return rares[Math.floor(Math.random() * rares.length)];
-            }
-            return KARENS.find(k => k.id === 'common_karen');
-        }
+function sellKaren(id) {
+    const karen = KARENS.find(k => k.id === id);
+    if (!inventory[id] || inventory[id] <= 0) return;
+    inventory[id]--;
+    if (inventory[id] <= 0) delete inventory[id];
+    money += SELL_PRICE[karen.tier];
+    updateUI();
+    renderInventory();
+}
 
-        function startSpin() {
-            if (balance <= 0) {
-                alert('Спины кончились!');
-                return;
-            }
-            balance--;
-            updateUI();
-            document.getElementById('spin-btn').disabled = true;
-            const tape = document.getElementById('tape');
-            buildTapePlaceholder();
-            const prizeKaren = rollKaren();
-            const prizeIndex = 32;
-            if (tape && tape.children[prizeIndex]) {
-                tape.replaceChild(createSlotCard(prizeKaren), tape.children[prizeIndex]);
-            }
-            setTimeout(function() {
-                tape.style.transition = 'transform 4s cubic-bezier(0.1, 0.8, 0.1, 1)';
-                const cardWidth = 100;
-                const wrapperWidth = document.querySelector('.roulette-wrapper').offsetWidth;
-                tape.style.transform = "translateX(" + (-(prizeIndex * cardWidth) + (wrapperWidth / 2) - (cardWidth / 2)) + "px)";
-            }, 50);
-            setTimeout(function() {
-                inventory[prizeKaren.id] = (inventory[prizeKaren.id] || 0) + 1;
-                updateUI();
-                showModal(prizeKaren);
-                document.getElementById('spin-btn').disabled = false;
-            }, 4100);
-        }
+// ========== РЫНОК ==========
+function renderMarket() {
+    const grid = document.getElementById('market-grid');
+    grid.innerHTML = '';
+    KARENS.forEach(k => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+            <img src="${k.img}">
+            <div class="name">${k.name}</div>
+            <div style="color:var(--currency);font-size:13px">${BUY_PRICE[k.tier]} C</div>
+            <button class="buy-btn" onclick="buyKaren('${k.id}')">Купить</button>
+        `;
+        grid.appendChild(card);
+    });
+}
 
-        function showModal(karen) {
-            document.getElementById('modal-content').className = "modal-content bg-" + karen.tier;
-            document.getElementById('win-tier').innerText = karen.tier.toUpperCase();
-            document.getElementById('win-img').src = karen.img;
-            document.getElementById('win-name').innerText = karen.name;
-            document.getElementById('win-modal').style.display = 'flex';
-        }
+function buyKaren(id) {
+    const karen = KARENS.find(k => k.id === id);
+    const price = BUY_PRICE[karen.tier];
+    if (money < price) return alert('Недостаточно C!');
+    money -= price;
+    inventory[id] = (inventory[id] || 0) + 1;
+    updateUI();
+    renderMarket();
+}
 
-        function closeModal() {
-            document.getElementById('win-modal').style.display = 'none';
-        }
+// ========== АДМИНКА ==========
+function fillAdminSelect() {
+    const select = document.getElementById('admin-karen');
+    select.innerHTML = '';
+    KARENS.forEach(k => {
+        const opt = document.createElement('option');
+        opt.value = k.id;
+        opt.textContent = k.name + ` (${k.tier})`;
+        select.appendChild(opt);
+    });
+}
 
-        function adminClick() {
-            adminClicks++;
-            if (adminClicks >= 5) {
-                document.getElementById('admin-panel').style.display = 'block';
-            }
-        }
+// Открытие админки по паролю
+document.querySelector('.header h1').addEventListener('click', () => {
+    const pass = prompt('Пароль админки:');
+    if (pass === 'karen24546') {
+        document.getElementById('admin-panel').style.display = 'block';
+    } else if (pass !== null) {
+        alert('Неверный пароль');
+    }
+});
 
-        function addSpins() {
-            balance += 100;
-            updateUI();
-        }
+function adminGiveKaren() {
+    const id = document.getElementById('admin-karen').value;
+    inventory[id] = (inventory[id] || 0) + 1;
+    updateUI();
+    alert('Карен выдан!');
+}
 
-        function clearInv() {
-            inventory = {};
-            updateUI();
-        }
+function adminGiveMoney() {
+    const amount = parseInt(document.getElementById('admin-money').value);
+    if (!amount || amount <= 0) return;
+    money += amount;
+    updateUI();
+    alert('Деньги выданы!');
+}
 
-        function toggleCheat() {
-            cheatActive = !cheatActive;
-            document.getElementById('cheat-status').innerText = cheatActive ? 'ВКЛ' : 'ВЫКЛ';
-        }
-    </script>
+function adminAddSpins() {
+    const amount = parseInt(document.getElementById('admin-spins').value);
+    if (!amount || amount <= 0) return;
+    balance += amount;
+    updateUI();
+    alert('Крутки добавлены!');
+}
+
+function applyRig() {
+    rig.common = document.getElementById('rig-common').checked;
+    rig.rare = document.getElementById('rig-rare').checked;
+    rig.super = document.getElementById('rig-super').checked;
+    rig.secret = document.getElementById('rig-secret').checked;
+    saveAccount();
+    alert('Подкрутка применена!');
+}
+</script>
 </body>
 </html>
